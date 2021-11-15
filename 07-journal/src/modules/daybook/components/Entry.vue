@@ -1,15 +1,51 @@
 <template>
-  <div @click="$router.push({ name: 'entry', params: { id: 10 } })" class="entry-container mb-3 pointer p-2">
+  <div @click="$router.push({ name: 'entry', params: { id: entry.id } })" class="entry-container mb-3 pointer p-2">
       <div class="entry-title d-flex">
-          <span class="text-success fs-5 fw-bold">08</span>
-          <span class="mx-1 fs-5">Noviembre</span>
-          <span class="mx-2 fw-light">2021, lunes</span>
+          <span class="text-success fs-5 fw-bold">{{ day }}</span>
+          <span class="mx-1 fs-5">{{ month }}</span>
+          <span class="mx-2 fw-light">{{ yearDay }}</span>
       </div>
-      <div class="entry-description">
-        Culpa excepteur labore mollit veniam occaecat magna laboris magna veniam occaecat sit. Eu voluptate non elit laborum officia do fugiat. Do id Lorem ex occaecat esse elit.Elit ea veniam pariatur culpa culpa ad. Magna quis nulla esse culpa elit exercitation nulla occaecat et incididunt incididunt. Non tempor ex ullamco dolor elit.
+      <div class="entry-description" v-text="shortText">
       </div>
   </div>
 </template>
+
+<script>
+
+    import getDayMonthYear from '../helpers/getDayMonthYear'
+
+export default {
+    props: {
+        entry:{
+            type: Object,
+            required: true
+        }
+    },
+    computed: {
+        shortText() {
+            return ( this.entry.text.length >130 )
+                ? this.entry.text.substring(0,130) + '...'
+                : this.entry.text
+        },
+        // date() {
+        //     const [ dayweek, month, day, year ] = this.entry.date.split(' ')
+        //     return { dayweek, month, day, year }
+        // }
+        day(){
+            const { day } = getDayMonthYear(this.entry.date)
+            return day
+        },
+        month(){
+            const { month } = getDayMonthYear(this.entry.date)
+            return month
+        },
+        yearDay(){
+            const { yearDay } = getDayMonthYear(this.entry.date)
+            return yearDay
+        }
+    }
+}
+</script>
 
 <style lang="scss" scoped>
 .entry-container{

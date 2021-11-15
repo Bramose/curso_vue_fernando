@@ -3,12 +3,12 @@ import * as actions from './actions'
 import * as getters from './getters'
 import * as mutations from './mutations'
 
-const journalModule = {
-    namespace: true,
+const journal = {
+    namespaced: true,
     actions,
     getters,
     mutations,
     state
 }
 
-export default journalModule
+export default journal
