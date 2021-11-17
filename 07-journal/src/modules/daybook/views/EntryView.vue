@@ -7,22 +7,35 @@
             <span class="mx-2 fs-4 fw-light">{{ yearDay }}</span>
         </div>
         <div>
-            <button class="btn btn-danger mx-2">Borrar <i class="fa fa-trash-alt"></i></button>
-            <button class="btn btn-primary">Subir foto <i class="fa fa-upload"></i></button>
+
+            <input 
+                v-show="false" 
+                type="file" 
+                @change="onSelectedImage" 
+                ref="imageSelector"
+                accept="image/png, image/jpeg"
+            >
+
+            <button v-if="entry.id" @click="onDeleteEntry" class="btn btn-danger mx-2">Borrar <i class="fa fa-trash-alt"></i></button>
+            <button @click="onSelectImage" class="btn btn-primary">Subir foto <i class="fa fa-upload"></i></button>
         </div>
     </div>
     <hr>
     <div class="d-flex flex-column px3 h-75">
         <textarea v-model="entry.text" placeholder="¿Qué sucedió hoy?"></textarea>
     </div>
-    <fab icon="fa-save" />
-    <img class="img-thumbnail" src="https://i2.wp.com/blog.vivaaerobus.com/wp-content/uploads/2019/12/Mejores-Playas-de-Canc%C3%BAn.jpg" alt="entry-picture">
+    <fab icon="fa-save" @on:click="saveEntry" />
+    <img v-if="entry.picture && !localImage" class="img-thumbnail" :src="entry.picture" alt="entry-picture">
+    <img v-if="localImage" class="img-thumbnail" :src="localImage" alt="entry-picture">
 </template>
 
 <script>
 import { defineAsyncComponent } from 'vue'
-import { mapGetters } from 'vuex'
+import { mapGetters, mapActions } from 'vuex'
 import getDayMonthYear from '../helpers/getDayMonthYear'
+import uploadImage from '../helpers/uploadImage'
+
+import Swal from 'sweetalert2'
 
 export default {
     props: {
@@ -33,7 +46,9 @@ export default {
     },
     data(){
         return {
-            entry: null
+            entry: null,
+            localImage: null,
+            file: null
         }
     },
     components:{
@@ -43,10 +58,78 @@ export default {
         this.loadEntry()
     },
     methods: {
+        ...mapActions('journal', ['updateEntry', 'addEntry', 'deleteEntry']),
         loadEntry(){
-            const entry = this.getEntryById(this.id)
-            if(!entry) return this.$router.push({ name: 'no-entry' })
+            let entry
+            if(this.id === 'new'){
+                entry = {
+                    text: '',
+                    date: new Date().getTime()
+                }
+            } else{
+                entry = this.getEntryById(this.id)
+                if(!entry) return this.$router.push({ name: 'no-entry' })
+            }
             this.entry = entry
+        },
+        async saveEntry(){
+
+            new Swal({
+                title: 'Espere por favor',
+                allowOutsideClick: false
+            })
+
+            Swal.showLoading()
+
+            const picture = await uploadImage(this.file)
+
+            this.entry.picture = picture
+
+            if(this.entry.id){
+                await this.updateEntry(this.entry) 
+            } else{
+                const id = await this.addEntry(this.entry)
+                this.$router.push({ name:'entry', params: { id } })
+            }
+
+            this.file = null
+            this.localImage = null
+            Swal.fire('Guardado', 'Entrada registrada con éxito', 'success')
+        },
+        async onDeleteEntry(){
+
+            const { isConfirmed } = await Swal.fire({
+                title: '¿Está seguro?',
+                text: 'Una vez borrado, no se puede recuperar',
+                showDenyButton: true,
+                confirmButtonText: 'Si, estoy seguro'
+            })
+            if( isConfirmed ) {
+                Swal.showLoading()
+                await this.deleteEntry(this.entry.id)
+                this.$router.push({ name: 'no-entry' })
+                Swal.fire('Eliminado', '', 'success')
+            }
+        },
+        onSelectedImage(event){
+            const file = event.target.files[0]
+            if(!file){
+                this.localImage= null
+                this.file = null 
+                return
+            }
+
+            this.file = file
+
+            const fr = new FileReader()
+            fr.onload = () => this.localImage = fr.result
+            fr.readAsDataURL(file)
+            console.log(fr)
+
+            // this.localImage
+        },
+        onSelectImage(){
+            this.$refs.imageSelector.click()
         }
     },
     watch: {
