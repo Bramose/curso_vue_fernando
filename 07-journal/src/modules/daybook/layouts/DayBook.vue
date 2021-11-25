@@ -10,31 +10,33 @@
   </div>
   <div v-else class="d-flex">
     <div class="col-4">
-      <entry-list/>
+      <entry-list />
     </div>
     <div class="col">
-      <router-view/>
+      <router-view />
     </div>
   </div>
 </template>
 
 <script>
 import { defineAsyncComponent } from "vue";
-import { mapActions, mapState } from 'vuex'
+import { mapActions, mapState } from "vuex";
 
 export default {
   components: {
     NavBar: defineAsyncComponent(() => import("../components/Navbar.vue")),
-    EntryList: defineAsyncComponent(() => import("../components/EntryList.vue"))
+    EntryList: defineAsyncComponent(() =>
+      import("../components/EntryList.vue")
+    ),
   },
   methods: {
-    ...mapActions('journal',['loadEntried'])
+    ...mapActions("journal", ["loadEntries"]),
   },
-  created(){
-    this.loadEntried()
+  created() {
+    this.loadEntries();
   },
   computed: {
-    ...mapState('journal',['isLoading'])
-  }
-}
+    ...mapState("journal", ["isLoading"]),
+  },
+};
 </script>

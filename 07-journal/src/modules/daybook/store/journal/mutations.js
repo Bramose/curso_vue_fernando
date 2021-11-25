@@ -10,8 +10,9 @@ export const updateEntry = (state, entry) => {
     state.entries[idx] = { ...entry }
 }
 export const addEntry = (state, entry) => {
-    state.entries.unshift(entry)
-    // state.entries = [ entry, ...state.entries ]
+    // De esta manera no se puede hacer ya que muta la entrada
+    // state.entries.unshift(entry)
+    state.entries = [ entry, ...state.entries ]
 }
 export const setLoading = (state) => {
     const status = !state.isLoading

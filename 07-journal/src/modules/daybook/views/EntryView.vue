@@ -1,32 +1,31 @@
 <template>
-    <!-- <template></template> -->
-    <div class="entry-title d-flex justify-content-between p-2">
-        <div>
-            <span class="text-success fs-3 fw-bold">{{ day }}</span>
-            <span class="mx-1 fs-3">{{ month }}</span>
-            <span class="mx-2 fs-4 fw-light">{{ yearDay }}</span>
+    <template v-if="entry">
+        <div class="entry-title d-flex justify-content-between p-2">
+            <div>
+                <span class="text-success fs-3 fw-bold">{{ day }}</span>
+                <span class="mx-1 fs-3">{{ month }}</span>
+                <span class="mx-2 fs-4 fw-light">{{ yearDay }}</span>
+            </div>
+            <div>
+                <input 
+                    v-show="false" 
+                    type="file" 
+                    @change="onSelectedImage" 
+                    ref="imageSelector"
+                    accept="image/png, image/jpeg"
+                >
+                <button v-if="entry.id" @click="onDeleteEntry" class="btn btn-danger mx-2">Borrar <i class="fa fa-trash-alt"></i></button>
+                <button @click="onSelectImage" class="btn btn-primary">Subir foto <i class="fa fa-upload"></i></button>
+            </div>
         </div>
-        <div>
-
-            <input 
-                v-show="false" 
-                type="file" 
-                @change="onSelectedImage" 
-                ref="imageSelector"
-                accept="image/png, image/jpeg"
-            >
-
-            <button v-if="entry.id" @click="onDeleteEntry" class="btn btn-danger mx-2">Borrar <i class="fa fa-trash-alt"></i></button>
-            <button @click="onSelectImage" class="btn btn-primary">Subir foto <i class="fa fa-upload"></i></button>
+        <hr>
+        <div class="d-flex flex-column px3 h-75">
+            <textarea v-model="entry.text" placeholder="¿Qué sucedió hoy?"></textarea>
         </div>
-    </div>
-    <hr>
-    <div class="d-flex flex-column px3 h-75">
-        <textarea v-model="entry.text" placeholder="¿Qué sucedió hoy?"></textarea>
-    </div>
+        <img v-if="entry.picture && !localImage" class="img-thumbnail" :src="entry.picture" alt="entry-picture">
+        <img v-if="localImage" class="img-thumbnail" :src="localImage" alt="entry-picture">
+    </template>
     <fab icon="fa-save" @on:click="saveEntry" />
-    <img v-if="entry.picture && !localImage" class="img-thumbnail" :src="entry.picture" alt="entry-picture">
-    <img v-if="localImage" class="img-thumbnail" :src="localImage" alt="entry-picture">
 </template>
 
 <script>
@@ -38,6 +37,7 @@ import uploadImage from '../helpers/uploadImage'
 import Swal from 'sweetalert2'
 
 export default {
+    name: 'EntryView',
     props: {
         id: {
             type: String,
@@ -73,31 +73,24 @@ export default {
             this.entry = entry
         },
         async saveEntry(){
-
-            new Swal({
+            Swal.fire({
                 title: 'Espere por favor',
                 allowOutsideClick: false
             })
-
             Swal.showLoading()
-
             const picture = await uploadImage(this.file)
-
             this.entry.picture = picture
-
             if(this.entry.id){
                 await this.updateEntry(this.entry) 
             } else{
                 const id = await this.addEntry(this.entry)
                 this.$router.push({ name:'entry', params: { id } })
             }
-
             this.file = null
             this.localImage = null
             Swal.fire('Guardado', 'Entrada registrada con éxito', 'success')
         },
         async onDeleteEntry(){
-
             const { isConfirmed } = await Swal.fire({
                 title: '¿Está seguro?',
                 text: 'Una vez borrado, no se puede recuperar',
@@ -105,6 +98,10 @@ export default {
                 confirmButtonText: 'Si, estoy seguro'
             })
             if( isConfirmed ) {
+                Swal.fire({
+                    title: 'Espere por favor',
+                    allowOutsideClick: false
+                })
                 Swal.showLoading()
                 await this.deleteEntry(this.entry.id)
                 this.$router.push({ name: 'no-entry' })
@@ -124,8 +121,6 @@ export default {
             const fr = new FileReader()
             fr.onload = () => this.localImage = fr.result
             fr.readAsDataURL(file)
-            console.log(fr)
-
             // this.localImage
         },
         onSelectImage(){

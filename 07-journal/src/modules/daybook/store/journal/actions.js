@@ -1,6 +1,6 @@
 import journalApi from '@/api/journalApi'
 
-export const loadEntried = async ({ commit }) => {
+export const loadEntries = async ({ commit }) => {
     const { data } = await journalApi.get('/entries.json')
     const entries = []
     if (!data) {
@@ -19,7 +19,6 @@ export const updateEntry = async ({ commit }, entry) => {
     const { id, ...dataToSave } = entry
     const { data } = await journalApi.put(`/entries/${id}.json`, dataToSave)
     commit('updateEntry', { id, ...data })
-    return data
 }
 export const addEntry = async ({ commit }, entry) => {
     const dataToInsert = { ...entry }

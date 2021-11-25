@@ -9,7 +9,7 @@ const uploadImage = async (file) => {
 
         const url = 'https://api.cloudinary.com/v1_1/bramose/image/upload'
         const { data } = await axios.post(url, fromData)
-        console.log(data)
+        // console.log(data)
         return data.secure_url
     } catch (error) {
         console.error('Error al cargar la imagen', error)
