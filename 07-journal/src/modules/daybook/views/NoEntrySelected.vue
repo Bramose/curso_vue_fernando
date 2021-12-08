@@ -4,7 +4,7 @@
             No hay nada seleccionado
         </h1>
     </div>
-    <fab/>
+    <fab @on:click="addEntry" />
 </template>
 
 <script>
@@ -12,8 +12,14 @@ import { defineAsyncComponent } from 'vue'
 
 
 export default {
+    name: 'NoEntrySelected',
     components:{
         fab: defineAsyncComponent( () => import('../components/Fab.vue'))
+    },
+    methods:{
+        addEntry(){
+            this.$router.push({ name: 'entry', params: { id: 'new' } })
+        }
     }
 }
 </script>
